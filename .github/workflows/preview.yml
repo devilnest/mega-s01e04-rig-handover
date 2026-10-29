@@ -1,0 +1,54 @@
+name: Publish review preview
+
+on:
+  workflow_dispatch:
+    inputs:
+      include_marker:
+        description: Include the lane marker for the initial review; false replaces it after review
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: review-preview
+  cancel-in-progress: false
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm typecheck
+      - name: Export the running digest by command
+        env:
+          LANE_MARKER: ${{ inputs.include_marker && secrets.LANE_MARKER || '' }}
+          PORT: 8787
+        run: |
+          node --import tsx src/server.ts > "$RUNNER_TEMP/rig.log" 2>&1 &
+          rig_pid=$!
+          trap 'kill "$rig_pid"' EXIT
+          node scripts/export-preview.mjs http://127.0.0.1:8787/digest/2026-10-28 "$RUNNER_TEMP/preview/index.html"
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: ${{ runner.temp }}/preview
+          retention-days: 1
+      - name: Publish the replaceable preview
+        id: deployment
+        uses: actions/deploy-pages@v4
