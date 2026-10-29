@@ -21,7 +21,7 @@ function DigestRowView({ row }: { row: DigestRow }) {
 }
 
 export function DigestPage({ digest }: { digest: DigestNight }) {
-  const rows = [...digest.rows].sort((a, b) => a.job.localeCompare(b.job));
+  const rows = digest.rows;
 
   return (
     <>

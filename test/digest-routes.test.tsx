@@ -88,6 +88,17 @@ describe('digest routes', () => {
     expect(jsonResponse.status).toBe(404);
   });
 
+  it('keeps the reader order for mixed-case and punctuation job names', async () => {
+    const jobs = ['zeta', 'Alpha', '_task', 'alpha'];
+    const app = await makeApp(jobs.map((job) => event('2026-10-28T20:00:00+01:00', job, 'ok', null)).join('\n'));
+    const json = await (await app.request(`/api/digest/${night}`)).json();
+    const html = await (await app.request(`/digest/${night}`)).text();
+    expect(json.rows.map((row: { job: string }) => row.job)).toEqual(['Alpha', '_task', 'alpha', 'zeta']);
+    const positions = json.rows.map((row: { job: string }) => html.indexOf(`<td>${row.job}</td>`));
+    expect(positions.every((position: number) => position >= 0)).toBe(true);
+    expect(positions).toEqual([...positions].sort((a: number, b: number) => a - b));
+  });
+
   it('renders an empty night as nothing ran and returns an empty JSON digest', async () => {
     const app = await makeApp('');
 
