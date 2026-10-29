@@ -54,7 +54,7 @@ describe('digest routes', () => {
       night,
       rows: [
         {
-          job: 'alpha', owner: null, runs: 4, retries: 3, lastStatus: 'ok', lastError: null,
+          job: 'alpha', owner: null, runs: 4, retries: 3, lastStatus: 'ok', lastError: 'third attempt',
           firstTime: '2026-10-28T22:00:00+01:00', lastTime: '2026-10-28T22:03:00+01:00',
         },
         {
@@ -124,5 +124,29 @@ describe('digest routes', () => {
     expect(json.rows).toHaveLength(1);
     expect(json.rows[0].job).toBe('still-readable');
     expect(json.rows[0].owner).toBeNull();
+  });
+
+  it('escapes user fields in HTML while preserving them in JSON', async () => {
+    const job = '<script>alert(1)</script>';
+    const owner = '<b>operator</b>';
+    const error = '<img src=x onerror=alert(1)>';
+    const app = await makeApp(event('2026-10-28T21:00:00+01:00', job, 'fail', owner, error));
+
+    const [pageResponse, jsonResponse] = await Promise.all([
+      app.request(`/digest/${night}`),
+      app.request(`/api/digest/${night}`),
+    ]);
+    const html = await pageResponse.text();
+    const json = await jsonResponse.json();
+
+    expect(pageResponse.status).toBe(200);
+    expect(html).not.toContain(job);
+    expect(html).not.toContain(owner);
+    expect(html).not.toContain(error);
+    expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+    expect(html).toContain('&lt;b&gt;operator&lt;/b&gt;');
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    expect(jsonResponse.status).toBe(200);
+    expect(json.rows[0]).toMatchObject({ job, owner, lastError: error });
   });
 });
