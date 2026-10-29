@@ -1,6 +1,6 @@
 ---
 plan: morning-digest
-status: ready
+status: done
 owner: rook
 opened: 2026-10-29
 ---
@@ -77,3 +77,22 @@ page again with `LANE_MARKER` unset (the banner reads "no marker set") and uploa
 link. Move this plan to `docs/plans/done/` with its issue list.
 
 Done when: the preview link no longer shows the lane marker.
+
+## Completed issue list
+
+- [#1 — Shared digest reader contract](https://github.com/devilnest/mega-s01e04-rig-handover/issues/1)
+- [#2 — Nightly run-log reader](https://github.com/devilnest/mega-s01e04-rig-handover/issues/2)
+- [#3 — HTML digest page](https://github.com/devilnest/mega-s01e04-rig-handover/issues/3)
+- [#4 — JSON digest endpoint](https://github.com/devilnest/mega-s01e04-rig-handover/issues/4)
+- [#5 — Status-board links and event counts](https://github.com/devilnest/mega-s01e04-rig-handover/issues/5)
+- [#6 — Digest route tests](https://github.com/devilnest/mega-s01e04-rig-handover/issues/6)
+- [#7 — Public preview and reviewer inspection](https://github.com/devilnest/mega-s01e04-rig-handover/issues/7)
+- [#8 — Marker removal and plan archival](https://github.com/devilnest/mega-s01e04-rig-handover/issues/8)
+
+Completed on 2026-10-29 after the course confirmed that the reviewer had seen the marked preview.
+The same public URL now serves the page with "no marker set":
+https://devilnest.github.io/mega-s01e04-rig-handover/
+
+Validation: 29 tests and strict TypeScript checks pass locally and in GitHub Actions. The
+five-job fixture still reports one bad line. Run fixtures are unchanged. Public cleanup
+deployment 40945795056 passed, and its HTML exactly matches the approved marker-free copy.
